@@ -92,13 +92,10 @@ List all non-countries.
 
 run_sql_and_return_html(cnx,"""
 SELECT 
-  `Short Name` AS `short_name`, 
-  `Country Code` AS `country_code`, 
-  `Region` AS `region`, 
-  `Income Group` AS `income_group`
+  `Short Name` AS `short_name`
 FROM world_bank_data.wdi_country
 WHERE `Region` IS NULL OR `Region` = '' OR `Region` = 'Aggregates'
-ORDER BY `short_name`
+ORDER BY `short_name``
 """)
 ```
 
@@ -277,8 +274,7 @@ run_sql_and_return_html(cnx,"""
 select 
   `Short Name`, 
   `Country Code`, 
-  `Region`, 
-  `Income Group`
+  `Region`
 from world_bank_data.wdi_country
 where (`Income Group` is null or `Income Group` = '')
   and `Region` is not null and `Region` != ''
@@ -332,7 +328,7 @@ select
   `Income Group`, 
   count(*) as num_countries
 from wdi_country
-where `Region` is not null and `Region` != ''
+where `Region` is not null and `Income Group` is not null and `Region` != ''
 group by `Region`, `Income Group`
 order by region, `Income Group`
 """)
