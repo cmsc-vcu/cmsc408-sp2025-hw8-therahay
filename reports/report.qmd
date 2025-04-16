@@ -276,7 +276,7 @@ run_sql_and_return_html(cnx,"""
 select 
   `Short Name`, 
   `Country Code`, 
-  `Region`
+  `income group`
 from world_bank_data.wdi_country
 where (`Income Group` is null or `Income Group` = '')
   and `Region` is not null and `Region` != ''
@@ -294,11 +294,11 @@ order by `short Name`
 ## NOTE - if you get this wrong, all subsequent tables will be wrong!
 
 execute_ddl(cnx,"""
-update wdi_country
-set `Income Group` = 'High income'
-where `Country Code` = 'VEN'
+UPDATE sp25_hayt2_hr.wdi_country
+SET `Income Group` = 'High income'
+WHERE `Country Code` = 'VEN';
+commit
 """)
-
 
 ```
 ```{python}
@@ -308,8 +308,8 @@ run_sql_and_return_html(cnx,"""
 select 
   `Short Name`, 
   `Country Code`, 
-  `Region`
-from wdi_country
+  `income group`
+from sp25_hayt2_hr.wdi_country
 where `Country Code` = 'VEN'
 """)
 
@@ -606,20 +606,23 @@ order by region
 ## (This is much simpler than task 20!)
 
 run_sql_and_return_html(cnx,"""
+
 with income_category_count as (
   select 
     `Income Group` as income_category,
     count(*) as country_count
   from wdi_country
+  where `Income Group` is not null and `Income Group` != ''  -- Exclude NULL and empty strings
   group by `Income Group`
 )
 select 
   income_category,
   country_count,
   (select count(*) from wdi_country) as total_countries,
-  round(country_count / (select count(*)) * 100, 2) as percent_of_total
+  round(country_count * 100.0 / (select count(*) from wdi_country), 1) as percent_of_total -- Rounded to 1 decimal place
 from income_category_count
-order by income_category
+order by income_category;
+
 """)
 
 ```
