@@ -92,10 +92,12 @@ List all non-countries.
 
 run_sql_and_return_html(cnx,"""
 SELECT 
-  `Short Name` AS `short_name`
+  `Short Name` AS short_name,
+  `Region` AS region,
+  `Income Group` AS income_group
 FROM world_bank_data.wdi_country
-WHERE `Region` IS NULL OR `Region` = '' OR `Region` = 'Aggregates'
-ORDER BY `short_name``
+WHERE `Region` IS NULL OR `Region` = '' OR `Income Group` IS NULL OR `Income Group` = ''
+ORDER BY short_name
 """)
 ```
 
@@ -464,20 +466,21 @@ with all_combinations as (
     r.region, 
     i.income_category
   from 
-    (select distinct `Region` as region from wdi_country) r
+    (select distinct `Region` as region from wdi_country where `Region` is not null and `Region` != '') r
   cross join
-    (select distinct `Income Group` as income_category from wdi_country) i
+    (select distinct `Income Group` as income_category from wdi_country where `Income Group` is not null and `Income Group` != '') i
 ),
 existing_combinations as (
   select 
     `Region` as region,
     `Income Group` as income_category
   from wdi_country
-  where `Region` is not null and `Income Group` is not null
+  where `Region` is not null and `Region` != '' and `Income Group` is not null and `Income Group` != ''
 )
 select 
+  0 as num_countries,
   a.region, 
-  a.income_category
+  a.income_category as income_group
 from 
   all_combinations a
 left join 
@@ -486,7 +489,7 @@ on
   a.region = e.region
   and a.income_category = e.income_category
 where 
-  e.region is null or e.income_category is null
+  e.region is null
 order by 
   a.region, a.income_category
 """)
