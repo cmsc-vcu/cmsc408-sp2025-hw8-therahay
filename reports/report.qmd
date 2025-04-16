@@ -97,8 +97,8 @@ SELECT
   `Region` AS `region`, 
   `Income Group` AS `income_group`
 FROM world_bank_data.wdi_country
-WHERE `Region` IS NULL OR `Region` = ''
-ORDER BY `short_name``
+WHERE `Region` IS NULL OR `Region` = '' OR `Region` = 'Aggregates'
+ORDER BY `short_name`
 """)
 ```
 
@@ -168,6 +168,7 @@ run_sql_and_return_html(cnx,"""
 select distinct region
 from world_bank_data.wdi_country
 order by region
+limit 7
 """)
 
 ```
