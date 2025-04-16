@@ -2,7 +2,7 @@
 title: Homework 8 - World Bank Analysis
 ---
 
-GITHUB URL:  <https://github.com/cmsc-vcu/cmsc408-sp2025-hw8-jleonard99>
+GITHUB URL:  <https://github.com/cmsc-vcu/cmsc408-sp2025-hw8-therahay>
 
 
 # Problem Background
@@ -91,7 +91,10 @@ List all non-countries.
 ## (skills: select, where)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select *
+from world_bank_data.wdi_country
+where region = '' or region is null
+
 """)
 ```
 
@@ -116,13 +119,19 @@ drop table if exists wdi_country;
 ```{python}
 # create table
 execute_ddl(cnx,"""
+CREATE TABLE wdi_country AS
+SELECT *
+FROM world_bank_data.wdi_country
+WHERE region IS NOT NULL AND region != '';
 """)
 ```
 
 ```{python}
 # show number of records
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select count(*) as num_countries
+from world_bank_data.wdi_country
+where region is not null and region != ''
 """)
 ```
 
@@ -134,7 +143,9 @@ According to the World Bank, in 2020 there were how many countries in the world?
 ## (skills: select, aggregate)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select count(*) as country_count
+from wdi_country
+where `Income Group` is not null and `Region` is not null
 """)
 
 ```
@@ -151,7 +162,9 @@ What are all unique values of region in the wdi_country table?
 ## (skills: select, aggregate, order by)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select distinct region
+from world_bank_data.wdi_country
+order by region
 """)
 
 ```
@@ -165,7 +178,11 @@ How many countries are in each region?
 ## (skills: select, aggregate, group by, order by)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select region, count(*) as country_count
+from world_bank_data.wdi_country
+where region is not null and region != ''
+group by region
+order by country_count desc
 """)
 
 ```
@@ -179,7 +196,9 @@ List the country full names and regions for all countries in north america.
 ## (skills: select, where, order by)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select `Long Name`, region
+from world_bank_data.wdi_country
+where region = "North America"
 """)
 
 ```
@@ -192,7 +211,9 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select region, `short name`, `long name`
+from world_bank_data.wdi_country
+where `short name` = 'Qatar'
 """)
 
 ```
@@ -206,7 +227,15 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where, order by)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  `Country Code`, 
+  `Short Name`, 
+  `2-alpha code`, 
+  `wb-2 code`, 
+  `Region`
+from wdi_country
+where `2-alpha code` != `wb-2 code`
+order by `Short Name`
 """)
 
 ```
@@ -217,10 +246,16 @@ select "doh!" as "Homer says ..." from dual
 ## Now, let's investigate the "income category" field.
 ## List the income categories and the number of countries in each
 ## income category in descending order of most countries to least.
-## (skills: select, aggregate, group by, order by)
+## (skills: select, group by, order by)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  `Income Group` as income_category, 
+  count(*) as country_count
+from world_bank_data.wdi_country
+where `Region` is not null and `Region` != ''
+group by `Income Group`
+order by country_count desc
 """)
 
 ```
@@ -235,7 +270,15 @@ select "doh!" as "Homer says ..." from dual
 ## in the first column.
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  `Short Name`, 
+  `Country Code`, 
+  `Region`, 
+  `Income Group`
+from world_bank_data.wdi_country
+where (`Income Group` is null or `Income Group` = '')
+  and `Region` is not null and `Region` != ''
+order by `short Name`
 """)
 
 ```
@@ -249,6 +292,9 @@ select "doh!" as "Homer says ..." from dual
 ## NOTE - if you get this wrong, all subsequent tables will be wrong!
 
 execute_ddl(cnx,"""
+update wdi_country
+set `Income Group` = 'High income'
+where `Country Code` = 'VEN'
 """)
 
 
@@ -257,7 +303,13 @@ execute_ddl(cnx,"""
 ## Now, display the country again to verify the change stuck!
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  `Short Name`, 
+  `Country Code`, 
+  `Region`, 
+  `Income Group`
+from wdi_country
+where `Country Code` = 'VEN'
 """)
 
 ```
@@ -271,7 +323,14 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, aggregate, group by, order by)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  `Region`, 
+  `Income Group`, 
+  count(*) as num_countries
+from wdi_country
+where `Region` is not null and `Region` != ''
+group by `Region`, `Income Group`
+order by region, `Income Group`
 """)
 
 ```
@@ -292,7 +351,25 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, aggregate, group by, nested query)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+  select
+    region,
+    sum(case when `Income Group` = 'High income' then no_of_countries else 0 end) as High,
+    sum(case when `Income Group` = 'Upper middle income' then no_of_countries else 0 end) as `Upper middle`,
+    sum(case when `Income Group` = 'Lower middle income' then no_of_countries else 0 end) as `Lower middle`,
+    sum(case when `Income Group` = 'Low income' then no_of_countries else 0 end) as Low,
+    sum(case when `Income Group` is null or `Income Group` = '' then no_of_countries else 0 end) as Other,
+    sum(no_of_countries) as Total
+  from (
+    select 
+      `Region`,
+      `Income Group`,
+      count(*) as no_of_countries
+    from wdi_country
+    where `Region` is not null and `Region` != ''
+    group by `Region`, `Income Group`
+  ) as income_counts
+  group by region
+  order by region
 """)
 
 ```
@@ -312,7 +389,21 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, aggregate, group by, nested query, order by, limit)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  low_income_count, 
+  region, 
+  'Low income' as income_group
+from (
+  select 
+    `Region` as region,
+    count(*) as low_income_count
+  from world_bank_data.wdi_country
+  where `Income Group` = 'Low income'
+    and `Region` is not null and `Region` != ''
+  group by `Region`
+  order by low_income_count desc
+  limit 1
+) as low_income_region
 """)
 
 ```
@@ -329,7 +420,23 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where, subquery)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  `Country Code`, 
+  `short name`, 
+  `Region`, 
+  `Income Group` as income_category
+from wdi_country
+where `Region` = (
+  select `Region` 
+  from world_bank_data.wdi_country 
+  where `Country Code` = 'MHL'
+)
+and `Income Group` = (
+  select `Income Group` 
+  from wdi_country 
+  where `Country Code` = 'MHL'
+)
+order by `short name`
 """)
 
 ```
@@ -354,7 +461,36 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where, subqueries, joins)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+with all_combinations as (
+  select 
+    r.region, 
+    i.income_category
+  from 
+    (select distinct `Region` as region from wdi_country) r
+  cross join
+    (select distinct `Income Group` as income_category from wdi_country) i
+),
+existing_combinations as (
+  select 
+    `Region` as region,
+    `Income Group` as income_category
+  from wdi_country
+  where `Region` is not null and `Income Group` is not null
+)
+select 
+  a.region, 
+  a.income_category
+from 
+  all_combinations a
+left join 
+  existing_combinations e
+on 
+  a.region = e.region
+  and a.income_category = e.income_category
+where 
+  e.region is null or e.income_category is null
+order by 
+  a.region, a.income_category
 """)
 
 ```
@@ -378,7 +514,28 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where, subqueries, joins, aggregate functions)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select 
+  t.region,
+  t.income_category,
+  t.country_count,
+  t.sum_in_region,
+  t.sum_in_income,
+  t.total_countries,
+  round(t.country_count / t.total_countries * 100, 2) as percent_of_total
+from (
+  select 
+    `Region` as region,
+    `Income Group` as income_category,
+    count(*) as country_count,
+    sum(count(*)) over (partition by `Region`) as sum_in_region,
+    sum(count(*)) over (partition by `Income Group`) as sum_in_income,
+    count(*) over () as total_countries
+  from wdi_country
+  where `Region` is not null and `Income Group` is not null
+  group by `Region`, `Income Group`
+) as t
+order by t.region, t.income_category
+
 """)
 
 
@@ -392,7 +549,34 @@ select "doh!" as "Homer says ..." from dual
 ## columns, Region in the rows and Percent of total in each cell of the table.
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+with region_income_percent as (
+  select 
+    t.region,
+    t.income_category,
+    round(t.country_count / t.total_countries * 100, 2) as percent_of_total
+  from (
+    select 
+      `Region` as region,
+      `Income Group` as income_category,
+      count(*) as country_count,
+      sum(count(*)) over (partition by `Region`) as sum_in_region,
+      sum(count(*)) over (partition by `Income Group`) as sum_in_income,
+      count(*) over () as total_countries
+    from world_bank_data.wdi_country
+    where `Region` is not null and `Income Group` is not null
+    group by `Region`, `Income Group`
+  ) as t
+)
+select 
+  region,
+  round(sum(case when income_category = 'High income' then percent_of_total else 0 end), 2) as "High Income",
+  round(sum(case when income_category = 'Upper middle income' then percent_of_total else 0 end), 2) as "Upper Middle Income",
+  round(sum(case when income_category = 'Lower middle income' then percent_of_total else 0 end), 2) as "Lower Middle Income",
+  round(sum(case when income_category = 'Low income' then percent_of_total else 0 end), 2) as "Low Income",
+  round(sum(case when income_category = '' then percent_of_total else 0 end), 2) as "No Income Category"
+from region_income_percent
+group by region
+order by region
 """)
 
 ```
@@ -407,7 +591,21 @@ select "doh!" as "Homer says ..." from dual
 ## (This is much simpler than task 20!)
 
 run_sql_and_return_html(cnx,"""
-select "doh!" as "Homer says ..." from dual
+with income_category_count as (
+  select 
+    `Income Group` as income_category,
+    count(*) as country_count
+  from wdi_country
+  where `Income Group` is not null
+  group by `Income Group`
+)
+select 
+  income_category,
+  country_count,
+  (select count(*) from wdi_country where `Income Group` is not null) as total_countries,
+  round(country_count / (select count(*) from wdi_country where `Income Group` is not null) * 100, 2) as percent_of_total
+from income_category_count
+order by income_category
 """)
 
 ```
