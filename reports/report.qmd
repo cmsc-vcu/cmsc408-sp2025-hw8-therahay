@@ -92,13 +92,13 @@ List all non-countries.
 
 run_sql_and_return_html(cnx,"""
 SELECT 
-  `Short Name`, 
-  `Country Code`, 
-  `Region`, 
-  `Income Group`
+  `Short Name` AS `short_name`, 
+  `Country Code` AS `country_code`, 
+  `Region` AS `region`, 
+  `Income Group` AS `income_group`
 FROM world_bank_data.wdi_country
 WHERE `Region` IS NULL OR `Region` = ''
-ORDER BY `Short Name`
+ORDER BY `short_name``
 """)
 ```
 
@@ -149,7 +149,6 @@ According to the World Bank, in 2020 there were how many countries in the world?
 run_sql_and_return_html(cnx,"""
 select count(*) as country_count
 from wdi_country
-where `Income Group` is not null and `Region` is not null
 """)
 
 ```
