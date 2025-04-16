@@ -515,27 +515,41 @@ order by
 ## (skills: select, where, subqueries, joins, aggregate functions)
 
 run_sql_and_return_html(cnx,"""
-select 
-  t.region,
-  t.income_category,
-  t.country_count,
-  t.sum_in_region,
-  t.sum_in_income,
-  t.total_countries,
-  round(t.country_count / t.total_countries * 100, 2) as percent_of_total
-from (
+with base as (
   select 
     `Region` as region,
     `Income Group` as income_category,
-    count(*) as country_count,
-    sum(count(*)) over (partition by `Region`) as sum_in_region,
-    sum(count(*)) over (partition by `Income Group`) as sum_in_income,
-    count(*) over () as total_countries
+    count(*) as country_count
   from wdi_country
   where `Region` is not null and `Income Group` is not null
   group by `Region`, `Income Group`
-) as t
-order by t.region, t.income_category
+),
+region_totals as (
+  select region, sum(country_count) as sum_in_region
+  from base
+  group by region
+),
+income_totals as (
+  select income_category, sum(country_count) as sum_in_income
+  from base
+  group by income_category
+),
+total as (
+  select sum(country_count) as total_countries from base
+)
+select 
+  b.region,
+  b.income_category,
+  b.country_count,
+  r.sum_in_region,
+  i.sum_in_income,
+  t.total_countries,
+  round(b.country_count * 100.0 / t.total_countries, 2) as percent_of_total
+from base b
+join region_totals r on b.region = r.region
+join income_totals i on b.income_category = i.income_category
+join total t
+order by b.region, b.income_category
 
 """)
 
