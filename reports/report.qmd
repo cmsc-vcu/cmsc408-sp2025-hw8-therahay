@@ -521,7 +521,7 @@ with base as (
     `Income Group` as income_category,
     count(*) as country_count
   from wdi_country
-  where `Region` is not null and `Income Group` is not null
+  where `Region` is not null
   group by `Region`, `Income Group`
 ),
 region_totals as (
@@ -611,14 +611,13 @@ with income_category_count as (
     `Income Group` as income_category,
     count(*) as country_count
   from wdi_country
-  where `Income Group` is not null
   group by `Income Group`
 )
 select 
   income_category,
   country_count,
-  (select count(*) from wdi_country where `Income Group` is not null) as total_countries,
-  round(country_count / (select count(*) from wdi_country where `Income Group` is not null) * 100, 2) as percent_of_total
+  (select count(*) from wdi_country) as total_countries,
+  round(country_count / (select count(*)) * 100, 2) as percent_of_total
 from income_category_count
 order by income_category
 """)
