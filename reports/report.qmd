@@ -306,8 +306,7 @@ run_sql_and_return_html(cnx,"""
 select 
   `Short Name`, 
   `Country Code`, 
-  `Region`, 
-  `Income Group`
+  `Region`
 from wdi_country
 where `Country Code` = 'VEN'
 """)
@@ -357,7 +356,6 @@ run_sql_and_return_html(cnx,"""
     sum(case when `Income Group` = 'Upper middle income' then no_of_countries else 0 end) as `Upper middle`,
     sum(case when `Income Group` = 'Lower middle income' then no_of_countries else 0 end) as `Lower middle`,
     sum(case when `Income Group` = 'Low income' then no_of_countries else 0 end) as Low,
-    sum(case when `Income Group` is null or `Income Group` = '' then no_of_countries else 0 end) as Other,
     sum(no_of_countries) as Total
   from (
     select 
