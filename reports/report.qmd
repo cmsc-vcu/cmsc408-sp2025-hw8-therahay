@@ -631,19 +631,7 @@ order by income_category;
 
 # Reflection
 
-1. Reflect on the SQL skills you used throughout these exercises. Which skills do you feel most confident in, and which do you think need more practice? How has this assignment helped you build or reinforce specific SQL competencies?
-
-( response goes here)
-
-2. Problem-Solving Approach: Describe your approach to tackling the more complex tasks (like Tasks 18, 23, and 24). How did you break down these problems, and what steps did you take when you encountered challenges? How would you approach a similar problem differently in the future?
-
-( response goes here)
-
-
-3. Learning Takeaways: Consider the overall learning experience from this assignment. What were the biggest takeaways about working with SQL for data analysis and transformation? How do you think these skills will apply in real-world scenarios or future coursework?
-
-( response goes here)
-
+Throughout the different kinds of exercises in the report, I go to work on a variety of SQL skills that I didn't know were available before. What I feel most confident about using in SQL has to definetly be the SELECT statements and filtering things out with WHERE because those are the skills we used the most. The tasks in this report were pretty frustrating with the autograder if I'm being completely honest but it definetly helped my skills grow. When i tried to do tasks 18, 23, and 24, I tried to look at the problem piece by piece so I didn't get confused at a part and tried to build it slowly and keep on ctrl e e to see where the table stood. In the future, something that I would do differently has to be taking my time with it and looking at the task carefully so I could definetly understand what the code is asking for me to do and potentially making a pseudocode first rather than going straight to writing the code. This assignment had a lot of takeaways for my skills in writing SQL and longer pieces of SQL to get exactly what answer I want for a query. The major learning point of this assignment was how strong SQL can be with just using the GROUP BY, JOIN, CASE, and window code to answer multiple different queries. I also see SQL being incredibly useful in future coursework involving databases and trying to graph out different things or just simply trying to answer a question within a database and filter things out.
 
 # README
 
